@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="it" class="">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,11 +8,19 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        primary: '#3b82f6',
-                        secondary: '#1e40af'
+                        primary: {
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb'
+                        },
+                        secondary: {
+                            500: '#f59e0b',
+                            600: '#d97706'
+                        }
                     }
                 }
             }
@@ -21,53 +29,93 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
+        .container-custom { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <div class="container mx-auto px-4 py-6 max-w-4xl">
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors">
+    <!-- Navigation Bar -->
+    <header class="fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
+        <div class="container-custom py-3 flex items-center justify-between">
+            <!-- Back Button & Logo -->
+            <div class="flex items-center space-x-4">
+                <a href="https://www.danielegiaquinto.com" 
+                   class="flex items-center text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                   title="Torna a danielegiaquinto.com">
+                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                    <span class="hidden sm:inline text-sm">Indietro</span>
+                </a>
+                <div class="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
+                <div class="flex items-center">
+                    <span class="text-xl font-bold text-primary-600 dark:text-primary-400">
+                        D<span class="text-secondary-500">G</span>
+                    </span>
+                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">/ Calcolo Orario</span>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center space-x-3">
+                <!-- Help Button -->
+                <button id="helpBtn" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors text-sm"
+                        title="Come funziona">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </button>
+
+                <!-- Dark Mode Toggle -->
+                <button id="darkModeToggle" 
+                        class="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                        title="Cambia tema">
+                    <svg id="sunIcon" class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                    <svg id="moonIcon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container mx-auto px-4 pt-20 pb-6 max-w-4xl">
         <!-- Header -->
         <header class="text-center mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 dark:text-gray-100 mb-2">
                 ⏱️ Calcolo Orario
             </h1>
-            <p class="text-gray-600 text-sm md:text-base">
+            <p class="text-gray-600 dark:text-gray-400 text-sm md:text-base">
                 Calcola il tempo trascorso tra due o più orari
             </p>
         </header>
 
-        <!-- Help Button -->
-        <div class="text-center mb-6">
-            <button id="helpBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors">
-                ❓ Come Funziona
-            </button>
-        </div>
-
         <!-- Main Form -->
-        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6 border border-gray-200 dark:border-gray-700">
             <!-- Output Format Selection (moved to top) -->
-            <div class="bg-gray-50 rounded-lg p-4 mb-6">
-                <h3 class="text-lg font-medium text-gray-800 mb-3">Formato di Visualizzazione</h3>
+            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
+                <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3">Formato di Visualizzazione</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="radio" name="outputFormat" value="sexagesimal" checked class="text-primary focus:ring-primary">
-                        <span class="text-sm md:text-base">📊 Sessagesimale (HH:MM:SS)</span>
+                        <input type="radio" name="outputFormat" value="sexagesimal" checked class="text-primary-500 focus:ring-primary-500 dark:focus:ring-primary-400">
+                        <span class="text-sm md:text-base text-gray-700 dark:text-gray-300">📊 Sessagesimale (HH:MM:SS)</span>
                     </label>
                     <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="radio" name="outputFormat" value="hours" class="text-primary focus:ring-primary">
-                        <span class="text-sm md:text-base">🕐 Decimale in Ore</span>
+                        <input type="radio" name="outputFormat" value="hours" class="text-primary-500 focus:ring-primary-500 dark:focus:ring-primary-400">
+                        <span class="text-sm md:text-base text-gray-700 dark:text-gray-300">🕐 Decimale in Ore</span>
                     </label>
                     <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="radio" name="outputFormat" value="minutes" class="text-primary focus:ring-primary">
-                        <span class="text-sm md:text-base">⏲️ Decimale in Minuti</span>
+                        <input type="radio" name="outputFormat" value="minutes" class="text-primary-500 focus:ring-primary-500 dark:focus:ring-primary-400">
+                        <span class="text-sm md:text-base text-gray-700 dark:text-gray-300">⏲️ Decimale in Minuti</span>
                     </label>
                     <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="radio" name="outputFormat" value="seconds" class="text-primary focus:ring-primary">
-                        <span class="text-sm md:text-base">⏱️ Decimale in Secondi</span>
+                        <input type="radio" name="outputFormat" value="seconds" class="text-primary-500 focus:ring-primary-500 dark:focus:ring-primary-400">
+                        <span class="text-sm md:text-base text-gray-700 dark:text-gray-300">⏱️ Decimale in Secondi</span>
                     </label>
                 </div>
             </div>
 
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">Inserisci gli Intervalli di Tempo</h2>
+            <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Inserisci gli Intervalli di Tempo</h2>
             
             <!-- Time Intervals Container -->
             <div id="timeIntervals" class="space-y-4 mb-6">
@@ -76,23 +124,23 @@
 
             <!-- Action Buttons -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <button id="addInterval" class="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                <button id="addInterval" class="bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
                     ➕ Aggiungi Intervallo
                 </button>
-                <button id="resetBtn" class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-colors hidden">
+                <button id="resetBtn" class="bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors hidden">
                     🔄 Nuovo Calcolo
                 </button>
             </div>
 
             <!-- Calculate Button -->
-            <button id="calculateBtn" class="w-full bg-primary hover:bg-secondary text-white font-semibold py-3 px-6 rounded-lg text-lg transition-colors mt-4">
+            <button id="calculateBtn" class="w-full bg-primary-500 hover:bg-primary-600 dark:bg-primary-600 dark:hover:bg-primary-700 text-white font-semibold py-3 px-6 rounded-lg text-lg transition-colors mt-4">
                 🧮 Calcola Tempo
             </button>
         </div>
 
         <!-- Results -->
-        <div id="results" class="bg-white rounded-lg shadow-lg p-6 hidden">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">Risultato</h2>
+        <div id="results" class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hidden border border-gray-200 dark:border-gray-700">
+            <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Risultato</h2>
             <div id="resultDisplay" class="text-center">
                 <!-- Results will be displayed here -->
             </div>
@@ -102,9 +150,9 @@
         </div>
 
         <!-- Usage Examples -->
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mt-6">
-            <h3 class="text-lg font-semibold text-blue-800 mb-3">💡 Esempi di Utilizzo</h3>
-            <ul class="list-disc list-inside space-y-2 text-blue-700 text-sm md:text-base">
+        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mt-6">
+            <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-300 mb-3">💡 Esempi di Utilizzo</h3>
+            <ul class="list-disc list-inside space-y-2 text-blue-700 dark:text-blue-300 text-sm md:text-base">
                 <li><strong>Ore di lavoro:</strong> Calcola le ore effettive considerando le pause pranzo</li>
                 <li><strong>Trasferte:</strong> Somma tempi di spostamento e lavoro</li>
                 <li><strong>Conto alla rovescia:</strong> Inserisci un orario futuro per sapere quanto tempo manca</li>
@@ -113,28 +161,28 @@
         </div>
 
         <!-- Footer -->
-        <footer class="text-center mt-8 text-gray-500 text-sm">
+        <footer class="text-center mt-8 text-gray-500 dark:text-gray-400 text-sm">
             <p>© 2024 Calcolo Orario - Sviluppato con ❤️ per la produttività</p>
         </footer>
     </div>
 
     <!-- Help Modal (always visible for SEO) -->
-    <div id="helpModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-        <div class="bg-white rounded-lg max-w-2xl w-full max-h-96 overflow-y-auto">
+    <div id="helpModal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-96 overflow-y-auto border border-gray-200 dark:border-gray-700">
             <div class="p-6">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold text-gray-800">📖 Come Funziona l'Applicazione</h2>
-                    <button id="closeModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200">📖 Come Funziona l'Applicazione</h2>
+                    <button id="closeModal" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-2xl">&times;</button>
                 </div>
                 
-                <div class="space-y-4 text-gray-700">
+                <div class="space-y-4 text-gray-700 dark:text-gray-300">
                     <section>
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">🎯 Scopo dell'Applicazione</h3>
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">🎯 Scopo dell'Applicazione</h3>
                         <p>Questa applicazione ti permette di calcolare il tempo trascorso tra due o più orari. È perfetta per tracciare ore di lavoro, pause, trasferte e calcolare il tempo rimanente fino a una scadenza.</p>
                     </section>
 
                     <section>
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">⏰ Utilizzo Base</h3>
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">⏰ Utilizzo Base</h3>
                         <ul class="list-disc list-inside space-y-1">
                             <li><strong>Inserisci orario inizio e fine:</strong> Seleziona ore, minuti e secondi dai menu a discesa</li>
                             <li><strong>Stesso giorno:</strong> Se gli orari sono dello stesso giorno, non serve fare altro</li>
@@ -144,7 +192,7 @@
                     </section>
 
                     <section>
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">📊 Formati di Visualizzazione</h3>
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">📊 Formati di Visualizzazione</h3>
                         <ul class="list-disc list-inside space-y-1">
                             <li><strong>Sessagesimale:</strong> Formato HH:MM:SS (esempio: 8:30:45)</li>
                             <li><strong>Decimale in Ore:</strong> Tutto convertito in ore (esempio: 8.51 ore)</li>
@@ -154,7 +202,7 @@
                     </section>
 
                     <section>
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">🔢 Intervalli Multipli</h3>
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">🔢 Intervalli Multipli</h3>
                         <ul class="list-disc list-inside space-y-1">
                             <li><strong>Aggiungi intervalli:</strong> Clicca "➕ Aggiungi Intervallo" per inserire più periodi</li>
                             <li><strong>Sommatoria automatica:</strong> Il totale viene calcolato sommando tutti gli intervalli</li>
@@ -163,9 +211,9 @@
                     </section>
 
                     <section>
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">🧮 Esempi Pratici</h3>
-                        <div class="bg-blue-50 p-3 rounded">
-                            <p><strong>Giornata lavorativa con pausa pranzo:</strong></p>
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">🧮 Esempi Pratici</h3>
+                        <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded border border-blue-200 dark:border-blue-800">
+                            <p class="text-gray-800 dark:text-gray-200"><strong>Giornata lavorativa con pausa pranzo:</strong></p>
                             <p>• Intervallo 1: 09:00 - 12:30 (mattina)</p>
                             <p>• Intervallo 2: 14:00 - 18:00 (pomeriggio)</p>
                             <p>• Risultato: 7:30:00 totali</p>
@@ -173,7 +221,7 @@
                     </section>
 
                     <section>
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">⌨️ Scorciatoie</h3>
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">⌨️ Scorciatoie</h3>
                         <ul class="list-disc list-inside space-y-1">
                             <li><strong>Ctrl/Cmd + Enter:</strong> Calcola il tempo</li>
                             <li><strong>Ctrl/Cmd + Plus (+):</strong> Aggiungi nuovo intervallo</li>

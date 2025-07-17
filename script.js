@@ -18,6 +18,7 @@ class TimeCalculator {
         document.getElementById('resetBtn').addEventListener('click', () => this.resetForm());
         document.getElementById('helpBtn').addEventListener('click', () => this.showModal());
         document.getElementById('closeModal').addEventListener('click', () => this.hideModal());
+        document.getElementById('darkModeToggle').addEventListener('click', () => this.toggleDarkMode());
         
         // Close modal when clicking outside
         document.getElementById('helpModal').addEventListener('click', (e) => {
@@ -25,6 +26,9 @@ class TimeCalculator {
                 this.hideModal();
             }
         });
+
+        // Initialize dark mode from localStorage
+        this.initializeDarkMode();
         
         // Auto-calculate when format changes (with debounce)
         document.querySelectorAll('input[name="outputFormat"]').forEach(radio => {
@@ -57,6 +61,32 @@ class TimeCalculator {
         document.body.style.overflow = 'auto';
     }
 
+    initializeDarkMode() {
+        // Check if user has a preference stored
+        const darkMode = localStorage.getItem('darkMode');
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        // Use stored preference or system preference
+        if (darkMode === 'true' || (darkMode === null && systemDark)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    }
+
+    toggleDarkMode() {
+        const htmlElement = document.documentElement;
+        const isDark = htmlElement.classList.contains('dark');
+        
+        if (isDark) {
+            htmlElement.classList.remove('dark');
+            localStorage.setItem('darkMode', 'false');
+        } else {
+            htmlElement.classList.add('dark');
+            localStorage.setItem('darkMode', 'true');
+        }
+    }
+
     resetForm() {
         // Clear all intervals
         document.getElementById('timeIntervals').innerHTML = '';
@@ -86,14 +116,14 @@ class TimeCalculator {
     addInterval() {
         this.intervalCount++;
         const intervalDiv = document.createElement('div');
-        intervalDiv.className = 'border border-gray-200 rounded-lg p-4 bg-gray-50';
+        intervalDiv.className = 'border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700';
         intervalDiv.setAttribute('data-interval', this.intervalCount);
 
         intervalDiv.innerHTML = `
             <div class="flex justify-between items-center mb-3">
-                <h4 class="font-medium text-gray-700">Intervallo ${this.intervalCount}</h4>
+                <h4 class="font-medium text-gray-700 dark:text-gray-300">Intervallo ${this.intervalCount}</h4>
                 ${this.intervalCount > 1 ? `
-                    <button class="remove-interval text-red-500 hover:text-red-700 font-medium text-sm">
+                    <button class="remove-interval text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium text-sm">
                         🗑️ Rimuovi
                     </button>
                 ` : ''}
@@ -102,46 +132,46 @@ class TimeCalculator {
             <!-- Different Days Checkbox -->
             <div class="mb-4">
                 <label class="flex items-center space-x-2 cursor-pointer">
-                    <input type="checkbox" class="different-days text-primary focus:ring-primary" 
+                    <input type="checkbox" class="different-days text-primary-500 focus:ring-primary-500 dark:focus:ring-primary-400" 
                            onchange="timeCalculator.toggleDateInputs(${this.intervalCount})">
-                    <span class="text-sm font-medium text-gray-700">📅 Giorni diversi</span>
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">📅 Giorni diversi</span>
                 </label>
             </div>
 
             <!-- Date inputs (hidden by default) -->
             <div class="date-inputs hidden grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Data Inizio</label>
-                    <input type="date" class="start-date w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data Inizio</label>
+                    <input type="date" class="start-date w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Data Fine</label>
-                    <input type="date" class="end-date w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data Fine</label>
+                    <input type="date" class="end-date w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent">
                 </div>
             </div>
 
             <!-- Time inputs with dropdowns -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Ora Inizio</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ora Inizio</label>
                     <div class="grid grid-cols-3 gap-2">
                         <div>
-                            <label class="block text-xs text-gray-500 mb-1">Ore</label>
-                            <select class="start-hours w-full px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Ore</label>
+                            <select class="start-hours w-full px-2 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent text-sm">
                                 <option value="">--</option>
                                 ${this.generateTimeOptions('hours')}
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs text-gray-500 mb-1">Min</label>
-                            <select class="start-minutes w-full px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Min</label>
+                            <select class="start-minutes w-full px-2 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent text-sm">
                                 <option value="">--</option>
                                 ${this.generateTimeOptions('minutes')}
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs text-gray-500 mb-1">Sec</label>
-                            <select class="start-seconds w-full px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Sec</label>
+                            <select class="start-seconds w-full px-2 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent text-sm">
                                 <option value="00">00</option>
                                 ${this.generateTimeOptions('seconds')}
                             </select>
@@ -149,25 +179,25 @@ class TimeCalculator {
                     </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Ora Fine</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ora Fine</label>
                     <div class="grid grid-cols-3 gap-2">
                         <div>
-                            <label class="block text-xs text-gray-500 mb-1">Ore</label>
-                            <select class="end-hours w-full px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Ore</label>
+                            <select class="end-hours w-full px-2 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent text-sm">
                                 <option value="">--</option>
                                 ${this.generateTimeOptions('hours')}
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs text-gray-500 mb-1">Min</label>
-                            <select class="end-minutes w-full px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Min</label>
+                            <select class="end-minutes w-full px-2 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent text-sm">
                                 <option value="">--</option>
                                 ${this.generateTimeOptions('minutes')}
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs text-gray-500 mb-1">Sec</label>
-                            <select class="end-seconds w-full px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Sec</label>
+                            <select class="end-seconds w-full px-2 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent text-sm">
                                 <option value="00">00</option>
                                 ${this.generateTimeOptions('seconds')}
                             </select>
@@ -395,7 +425,7 @@ class TimeCalculator {
         // Show breakdown
         if (intervals.length > 1) {
             let breakdownHTML = `
-                <h4 class="font-semibold text-gray-800 mb-3">📋 Dettaglio Intervalli</h4>
+                <h4 class="font-semibold text-gray-800 dark:text-gray-200 mb-3">📋 Dettaglio Intervalli</h4>
                 <div class="space-y-2">
             `;
 
@@ -405,13 +435,13 @@ class TimeCalculator {
                 const status = interval.isCountdown ? 'futuro' : 'completato';
                 
                 breakdownHTML += `
-                    <div class="flex justify-between items-center bg-gray-50 rounded p-3">
+                    <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-700 rounded p-3">
                         <div class="flex items-center space-x-2">
                             <span>${icon}</span>
-                            <span class="font-medium">${interval.description}</span>
-                            <span class="text-xs text-gray-500">(${status})</span>
+                            <span class="font-medium text-gray-800 dark:text-gray-200">${interval.description}</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">(${status})</span>
                         </div>
-                        <span class="font-mono text-sm">${formatted}</span>
+                        <span class="font-mono text-sm text-gray-700 dark:text-gray-300">${formatted}</span>
                     </div>
                 `;
             });
@@ -464,7 +494,7 @@ class TimeCalculator {
         
         resultsDiv.classList.remove('hidden');
         resultDisplay.innerHTML = `
-            <div class="bg-red-100 border border-red-300 text-red-700 rounded-lg p-4">
+            <div class="bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 rounded-lg p-4">
                 <h3 class="font-semibold mb-2">❌ Errore</h3>
                 <p>${message}</p>
             </div>
