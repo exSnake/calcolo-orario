@@ -223,6 +223,9 @@ class TimeCalculator {
 
         // Add auto-calculate listeners to the new dropdowns
         this.addAutoCalculateListeners(intervalDiv);
+        
+        // Add smart typing listeners to time dropdowns
+        this.addSmartTypingListeners(intervalDiv);
     }
 
     addAutoCalculateListeners(intervalDiv) {
@@ -260,6 +263,75 @@ class TimeCalculator {
                 }, 800);
             });
         });
+    }
+
+    addSmartTypingListeners(intervalDiv) {
+        const timeSelects = intervalDiv.querySelectorAll('select[class*="hours"], select[class*="minutes"], select[class*="seconds"]');
+        
+        timeSelects.forEach(select => {
+            let typingTimer;
+            let typedChars = '';
+            
+            select.addEventListener('keydown', (e) => {
+                // Only handle number keys and backspace
+                if (e.key >= '0' && e.key <= '9') {
+                    e.preventDefault();
+                    
+                    // Clear previous typing timer
+                    clearTimeout(typingTimer);
+                    
+                    // Add typed character
+                    typedChars += e.key;
+                    
+                    // Limit to 2 characters for time
+                    if (typedChars.length > 2) {
+                        typedChars = typedChars.slice(-2);
+                    }
+                    
+                    // Try to find matching option
+                    this.findAndSelectTimeOption(select, typedChars);
+                    
+                    // Clear typed chars after delay
+                    typingTimer = setTimeout(() => {
+                        typedChars = '';
+                    }, 1000);
+                    
+                } else if (e.key === 'Backspace') {
+                    e.preventDefault();
+                    typedChars = typedChars.slice(0, -1);
+                    if (typedChars) {
+                        this.findAndSelectTimeOption(select, typedChars);
+                    }
+                } else if (e.key === 'Escape') {
+                    typedChars = '';
+                    clearTimeout(typingTimer);
+                }
+            });
+        });
+    }
+
+    findAndSelectTimeOption(select, typedValue) {
+        // Convert single digit to double digit for time
+        let searchValue = typedValue;
+        if (typedValue.length === 1) {
+            searchValue = '0' + typedValue;
+        }
+        
+        // Find option with matching value
+        const option = select.querySelector(`option[value="${searchValue}"]`);
+        if (option) {
+            select.value = searchValue;
+            // Trigger change event for auto-calculation
+            select.dispatchEvent(new Event('change'));
+        } else if (typedValue.length === 2) {
+            // If two digits don't match, try just the second digit
+            const singleDigit = '0' + typedValue.charAt(1);
+            const fallbackOption = select.querySelector(`option[value="${singleDigit}"]`);
+            if (fallbackOption) {
+                select.value = singleDigit;
+                select.dispatchEvent(new Event('change'));
+            }
+        }
     }
 
     hasValidCompleteIntervals() {
