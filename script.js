@@ -12,6 +12,11 @@ class TimeCalculator {
     init() {
         this.bindEvents();
         this.addInterval(); // Add first interval by default
+        
+        // Initialize timer storage after DOM is ready
+        setTimeout(() => {
+            this.timerStorage = new TimerStorage(this);
+        }, 100);
     }
 
     bindEvents() {
@@ -51,6 +56,15 @@ class TimeCalculator {
                             this.calculate();
                         }
                     }, 200);
+                    
+                    // Update timer storage buttons when format changes
+                    if (this.timerStorage && this.timerStorage.currentTimerName) {
+                        setTimeout(() => {
+                            if (this.timerStorage) {
+                                this.timerStorage.updateSaveButtons();
+                            }
+                        }, 250);
+                    }
                 }
             });
         });
@@ -109,6 +123,11 @@ class TimeCalculator {
         
         // Add initial interval
         this.addInterval();
+        
+        // Clear current timer and update buttons
+        if (this.timerStorage) {
+            this.timerStorage.clearCurrentTimer();
+        }
     }
 
     generateTimeOptions(type) {
@@ -243,6 +262,11 @@ class TimeCalculator {
         
         // Add smart typing listeners to time dropdowns
         this.addSmartTypingListeners(intervalDiv);
+        
+        // Update timer storage buttons when new interval is added
+        if (this.timerStorage) {
+            this.timerStorage.clearCurrentTimer();
+        }
     }
 
     addAutoCalculateListeners(intervalDiv) {
@@ -260,6 +284,18 @@ class TimeCalculator {
                         this.calculate();
                     }
                 }, 800); // 800ms debounce
+            });
+            
+            // Clear current timer when user modifies inputs
+            select.addEventListener('change', () => {
+                if (this.timerStorage && this.timerStorage.currentTimerName) {
+                    // Check if this change makes the timer different from saved state
+                    setTimeout(() => {
+                        if (this.timerStorage) {
+                            this.timerStorage.updateSaveButtons();
+                        }
+                    }, 100);
+                }
             });
         });
         
@@ -287,6 +323,17 @@ class TimeCalculator {
                             this.calculate();
                         }
                     }, 800);
+                }
+            });
+            
+            // Update timer storage buttons when inputs change
+            input.addEventListener('change', () => {
+                if (this.timerStorage && this.timerStorage.currentTimerName) {
+                    setTimeout(() => {
+                        if (this.timerStorage) {
+                            this.timerStorage.updateSaveButtons();
+                        }
+                    }, 100);
                 }
             });
         });
@@ -396,6 +443,11 @@ class TimeCalculator {
         // Auto-calculate if we still have valid intervals
         if (this.hasValidCompleteIntervals()) {
             this.calculate();
+        }
+        
+        // Update timer storage buttons when interval is removed
+        if (this.timerStorage) {
+            this.timerStorage.clearCurrentTimer();
         }
     }
 
@@ -549,6 +601,11 @@ class TimeCalculator {
         
         // Show reset button after first calculation
         document.getElementById('resetBtn').classList.remove('hidden');
+        
+        // Update timer storage buttons
+        if (this.timerStorage) {
+            this.timerStorage.updateSaveButtons();
+        }
     }
 
     displayResults(intervals, totalSeconds) {
@@ -801,10 +858,15 @@ document.addEventListener('keydown', (e) => {
         }
     }
 
-    // Escape to close modal
+    // Escape to close modals
     if (e.key === 'Escape') {
         if (window.timeCalculator) {
             window.timeCalculator.hideModal();
+            
+            // Also close save timer modal if open
+            if (window.timeCalculator.timerStorage) {
+                window.timeCalculator.timerStorage.hideSaveModal();
+            }
         }
     }
 }); 
