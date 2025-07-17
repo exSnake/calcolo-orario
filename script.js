@@ -4,6 +4,8 @@ class TimeCalculator {
         this.intervals = [];
         this.intervalCount = 0;
         this.autoCalculateTimeout = null;
+        this.countdownTimer = null;
+        this.currentFormat = 'humanized'; // Default format
         this.init();
     }
 
@@ -35,6 +37,9 @@ class TimeCalculator {
             radio.addEventListener('change', () => {
                 const intervals = document.querySelectorAll('[data-interval]');
                 if (intervals.length > 0) {
+                    // Update current format for countdown
+                    this.currentFormat = radio.value;
+                    
                     // Clear any existing timeout
                     if (this.autoCalculateTimeout) {
                         clearTimeout(this.autoCalculateTimeout);
@@ -95,6 +100,9 @@ class TimeCalculator {
         this.intervalCount = 0;
         this.intervals = [];
         
+        // Clear countdown timer
+        this.clearCountdownTimer();
+        
         // Hide results and reset button
         document.getElementById('results').classList.add('hidden');
         document.getElementById('resetBtn').classList.add('hidden');
@@ -129,12 +137,17 @@ class TimeCalculator {
                 ` : ''}
             </div>
             
-            <!-- Different Days Checkbox -->
-            <div class="mb-4">
+            <!-- Options Checkboxes -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <label class="flex items-center space-x-2 cursor-pointer">
                     <input type="checkbox" class="different-days text-primary-500 focus:ring-primary-500 dark:focus:ring-primary-400" 
                            onchange="timeCalculator.toggleDateInputs(${this.intervalCount})">
                     <span class="text-sm font-medium text-gray-700 dark:text-gray-300">📅 Giorni diversi</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" class="show-seconds text-primary-500 focus:ring-primary-500 dark:focus:ring-primary-400" 
+                           onchange="timeCalculator.toggleSecondsInputs(${this.intervalCount})">
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">⏱️ Mostra secondi</span>
                 </label>
             </div>
 
@@ -154,53 +167,57 @@ class TimeCalculator {
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ora Inizio</label>
-                    <div class="grid grid-cols-3 gap-2">
-                        <div>
-                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Ore</label>
-                            <select class="start-hours w-full px-2 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent text-sm">
-                                <option value="">--</option>
-                                ${this.generateTimeOptions('hours')}
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Min</label>
-                            <select class="start-minutes w-full px-2 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent text-sm">
-                                <option value="">--</option>
-                                ${this.generateTimeOptions('minutes')}
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Sec</label>
-                            <select class="start-seconds w-full px-2 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent text-sm">
-                                <option value="00">00</option>
-                                ${this.generateTimeOptions('seconds')}
-                            </select>
+                    <div class="time-inputs-container">
+                        <div class="grid gap-2 time-grid-cols">
+                            <div>
+                                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Ore</label>
+                                <select class="start-hours w-full px-2 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent text-sm">
+                                    <option value="">--</option>
+                                    ${this.generateTimeOptions('hours')}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Min</label>
+                                <select class="start-minutes w-full px-2 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent text-sm">
+                                    <option value="">--</option>
+                                    ${this.generateTimeOptions('minutes')}
+                                </select>
+                            </div>
+                            <div class="seconds-column hidden">
+                                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Sec</label>
+                                <select class="start-seconds w-full px-2 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent text-sm">
+                                    <option value="00" selected>00</option>
+                                    ${this.generateTimeOptions('seconds')}
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ora Fine</label>
-                    <div class="grid grid-cols-3 gap-2">
-                        <div>
-                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Ore</label>
-                            <select class="end-hours w-full px-2 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent text-sm">
-                                <option value="">--</option>
-                                ${this.generateTimeOptions('hours')}
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Min</label>
-                            <select class="end-minutes w-full px-2 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent text-sm">
-                                <option value="">--</option>
-                                ${this.generateTimeOptions('minutes')}
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Sec</label>
-                            <select class="end-seconds w-full px-2 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent text-sm">
-                                <option value="00">00</option>
-                                ${this.generateTimeOptions('seconds')}
-                            </select>
+                    <div class="time-inputs-container">
+                        <div class="grid gap-2 time-grid-cols">
+                            <div>
+                                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Ore</label>
+                                <select class="end-hours w-full px-2 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent text-sm">
+                                    <option value="">--</option>
+                                    ${this.generateTimeOptions('hours')}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Min</label>
+                                <select class="end-minutes w-full px-2 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent text-sm">
+                                    <option value="">--</option>
+                                    ${this.generateTimeOptions('minutes')}
+                                </select>
+                            </div>
+                            <div class="seconds-column hidden">
+                                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Sec</label>
+                                <select class="end-seconds w-full px-2 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent text-sm">
+                                    <option value="00" selected>00</option>
+                                    ${this.generateTimeOptions('seconds')}
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -256,11 +273,21 @@ class TimeCalculator {
                     clearTimeout(this.autoCalculateTimeout);
                 }
                 
-                this.autoCalculateTimeout = setTimeout(() => {
-                    if (this.hasValidCompleteIntervals()) {
-                        this.calculate();
-                    }
-                }, 800);
+                // Special handling for show-seconds checkbox
+                if (input.classList.contains('show-seconds')) {
+                    // Immediate recalculation for seconds toggle since it affects the time format
+                    this.autoCalculateTimeout = setTimeout(() => {
+                        if (this.hasValidCompleteIntervals()) {
+                            this.calculate();
+                        }
+                    }, 100);
+                } else {
+                    this.autoCalculateTimeout = setTimeout(() => {
+                        if (this.hasValidCompleteIntervals()) {
+                            this.calculate();
+                        }
+                    }, 800);
+                }
             });
         });
     }
@@ -379,9 +406,12 @@ class TimeCalculator {
             interval.setAttribute('data-interval', newNumber);
             interval.querySelector('h4').textContent = `Intervallo ${newNumber}`;
             
-            // Update the onchange attribute for the checkbox
-            const checkbox = interval.querySelector('.different-days');
-            checkbox.setAttribute('onchange', `timeCalculator.toggleDateInputs(${newNumber})`);
+            // Update the onchange attributes for checkboxes
+            const daysCheckbox = interval.querySelector('.different-days');
+            const secondsCheckbox = interval.querySelector('.show-seconds');
+            
+            daysCheckbox.setAttribute('onchange', `timeCalculator.toggleDateInputs(${newNumber})`);
+            secondsCheckbox.setAttribute('onchange', `timeCalculator.toggleSecondsInputs(${newNumber})`);
         });
         this.intervalCount = intervals.length;
     }
@@ -398,19 +428,66 @@ class TimeCalculator {
         }
     }
 
+    toggleSecondsInputs(intervalNumber) {
+        const interval = document.querySelector(`[data-interval="${intervalNumber}"]`);
+        const checkbox = interval.querySelector('.show-seconds');
+        const secondsColumns = interval.querySelectorAll('.seconds-column');
+        const timeGrids = interval.querySelectorAll('.time-grid-cols');
+        
+        if (checkbox.checked) {
+            // Show seconds
+            secondsColumns.forEach(col => col.classList.remove('hidden'));
+            timeGrids.forEach(grid => grid.classList.add('show-seconds'));
+        } else {
+            // Hide seconds and set to 00
+            secondsColumns.forEach(col => col.classList.add('hidden'));
+            timeGrids.forEach(grid => grid.classList.remove('show-seconds'));
+            
+            // Reset seconds to 00
+            const startSeconds = interval.querySelector('.start-seconds');
+            const endSeconds = interval.querySelector('.end-seconds');
+            startSeconds.value = '00';
+            endSeconds.value = '00';
+            
+            // Trigger auto-calculation
+            if (this.hasValidCompleteIntervals()) {
+                // Clear any existing timeout
+                if (this.autoCalculateTimeout) {
+                    clearTimeout(this.autoCalculateTimeout);
+                }
+                
+                this.autoCalculateTimeout = setTimeout(() => {
+                    if (this.hasValidCompleteIntervals()) {
+                        this.calculate();
+                    }
+                }, 800);
+            }
+        }
+    }
+
     getTimeFromDropdowns(interval, type) {
         const hours = interval.querySelector(`.${type}-hours`).value;
         const minutes = interval.querySelector(`.${type}-minutes`).value;
-        const seconds = interval.querySelector(`.${type}-seconds`).value || '00';
         
         if (!hours || !minutes) {
             return null;
+        }
+        
+        // Check if seconds are shown or hidden
+        const showSecondsCheckbox = interval.querySelector('.show-seconds');
+        let seconds = '00';
+        
+        if (showSecondsCheckbox && showSecondsCheckbox.checked) {
+            seconds = interval.querySelector(`.${type}-seconds`).value || '00';
         }
         
         return `${hours}:${minutes}:${seconds}`;
     }
 
     calculate() {
+        // Clear any existing countdown timer
+        this.clearCountdownTimer();
+        
         const intervals = document.querySelectorAll('[data-interval]');
         const results = [];
         let totalSeconds = 0;
@@ -480,19 +557,43 @@ class TimeCalculator {
         const breakdown = document.getElementById('breakdown');
         const format = document.querySelector('input[name="outputFormat"]:checked').value;
 
+        // Clear any existing countdown timer
+        this.clearCountdownTimer();
+
         // Show results section
         resultsDiv.classList.remove('hidden');
 
         // Format total time
         const totalFormatted = this.formatTime(totalSeconds, format);
 
+        // Check for future times and find the latest end time
+        const futureIntervals = intervals.filter(interval => interval.endDateTime > new Date());
+        const latestEndTime = futureIntervals.length > 0 ? 
+            Math.max(...futureIntervals.map(interval => interval.endDateTime.getTime())) : null;
+
         resultDisplay.innerHTML = `
             <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg p-6 mb-4">
-                <h3 class="text-lg font-semibold mb-2">📊 Risultato</h3>
+                <h3 class="text-lg font-semibold mb-2">📊 Tempo calcolato</h3>
                 <div class="text-3xl font-bold mb-2">${totalFormatted}</div>
-                <p class="text-blue-100">Tempo calcolato</p>
+                ${
+                  latestEndTime
+                    ? `
+                    <div class="mt-4 pt-4 border-t border-blue-400">
+                        <h4 class="text-sm font-medium mb-1">⏰ Conto alla Rovescia</h4>
+                        <div id="countdownDisplay" class="text-lg">
+                            Calcolo in corso...
+                        </div>
+                    </div>
+                `
+                    : ""
+                }
             </div>
         `;
+
+        // Start countdown if there are future times
+        if (latestEndTime) {
+            this.startCountdownTimer(new Date(latestEndTime), format);
+        }
 
         // Show breakdown
         if (intervals.length > 1) {
@@ -513,7 +614,7 @@ class TimeCalculator {
                             <span class="font-medium text-gray-800 dark:text-gray-200">${interval.description}</span>
                             <span class="text-xs text-gray-500 dark:text-gray-400">(${status})</span>
                         </div>
-                        <span class="font-mono text-sm text-gray-700 dark:text-gray-300">${formatted}</span>
+                        <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">${formatted}</span>
                     </div>
                 `;
             });
@@ -528,12 +629,58 @@ class TimeCalculator {
         resultsDiv.scrollIntoView({ behavior: 'smooth' });
     }
 
+    startCountdownTimer(targetDateTime, format) {
+        this.currentFormat = format;
+        this.updateCountdown(targetDateTime);
+        
+        // Update every second
+        this.countdownTimer = setInterval(() => {
+            this.updateCountdown(targetDateTime);
+        }, 1000);
+    }
+
+    updateCountdown(targetDateTime) {
+        const now = new Date();
+        const timeLeft = targetDateTime - now;
+        
+        const countdownElement = document.getElementById('countdownDisplay');
+        if (!countdownElement) return;
+
+        if (timeLeft <= 0) {
+            countdownElement.innerHTML = `
+                <span class="text-green-300 font-semibold">⏰ Scaduto!</span>
+            `;
+            this.clearCountdownTimer();
+            return;
+        }
+
+        // Calculate time components
+        const totalSecondsLeft = Math.floor(timeLeft / 1000);
+        
+        // Format countdown display using selected format
+        const formattedCountdown = this.formatTime(totalSecondsLeft, this.currentFormat);
+
+        countdownElement.innerHTML = `
+            <div class="text-yellow-300 font-semibold">${formattedCountdown}</div>
+        `;
+    }
+
+    clearCountdownTimer() {
+        if (this.countdownTimer) {
+            clearInterval(this.countdownTimer);
+            this.countdownTimer = null;
+        }
+    }
+
     formatTime(seconds, format) {
         const absSeconds = Math.abs(seconds);
         const isNegative = seconds < 0;
         const sign = isNegative ? '-' : '';
 
         switch (format) {
+            case 'humanized':
+                return this.formatTimeHuman(seconds);
+
             case 'sexagesimal':
                 const days = Math.floor(absSeconds / 86400);
                 const hours = Math.floor((absSeconds % 86400) / 3600);
@@ -560,6 +707,53 @@ class TimeCalculator {
         }
     }
 
+    formatTimeHuman(seconds) {
+        const absSeconds = Math.abs(seconds);
+        const isNegative = seconds < 0;
+        const sign = isNegative ? '-' : '';
+
+        const days = Math.floor(absSeconds / 86400);
+        const hours = Math.floor((absSeconds % 86400) / 3600);
+        const minutes = Math.floor((absSeconds % 3600) / 60);
+        const secs = absSeconds % 60;
+
+        const parts = [];
+
+        if (days > 0) {
+            parts.push(`${days} ${days === 1 ? 'giorno' : 'giorni'}`);
+        }
+        
+        if (hours > 0) {
+            parts.push(`${hours} ${hours === 1 ? 'ora' : 'ore'}`);
+        }
+        
+        if (minutes > 0) {
+            parts.push(`${minutes} ${minutes === 1 ? 'minuto' : 'minuti'}`);
+        }
+        
+        if (secs > 0) {
+            parts.push(`${secs} ${secs === 1 ? 'secondo' : 'secondi'}`);
+        }
+
+        // Se tutto è zero, mostra "0 secondi"
+        if (parts.length === 0) {
+            parts.push('0 secondi');
+        }
+
+        // Unisci le parti con virgole e "e" prima dell'ultima
+        let result = '';
+        if (parts.length === 1) {
+            result = parts[0];
+        } else if (parts.length === 2) {
+            result = parts.join(' e ');
+        } else {
+            const lastPart = parts.pop();
+            result = parts.join(', ') + ' e ' + lastPart;
+        }
+
+        return `${sign}${result}`;
+    }
+
     showError(message) {
         const resultDisplay = document.getElementById('resultDisplay');
         const resultsDiv = document.getElementById('results');
@@ -580,6 +774,13 @@ class TimeCalculator {
 // Initialize the calculator when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     window.timeCalculator = new TimeCalculator();
+});
+
+// Clean up timer when page unloads
+window.addEventListener('beforeunload', () => {
+    if (window.timeCalculator && window.timeCalculator.countdownTimer) {
+        window.timeCalculator.clearCountdownTimer();
+    }
 });
 
 // Keyboard shortcuts
